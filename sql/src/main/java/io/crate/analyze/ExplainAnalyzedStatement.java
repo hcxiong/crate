@@ -40,10 +40,12 @@ public class ExplainAnalyzedStatement implements AnalyzedStatement, AnalyzedRela
 
     final AnalyzedStatement statement;
     private final List<Field> fields;
+    private final ProfilingContext context;
 
-    public ExplainAnalyzedStatement(String columnName, AnalyzedStatement statement) {
+    ExplainAnalyzedStatement(String columnName, AnalyzedStatement statement, ProfilingContext context) {
         this.statement = statement;
         this.fields = Collections.singletonList(new Field(this, new OutputName(columnName), DataTypes.OBJECT));
+        this.context = context;
     }
 
     @Override
@@ -53,6 +55,10 @@ public class ExplainAnalyzedStatement implements AnalyzedStatement, AnalyzedRela
 
     public AnalyzedStatement statement() {
         return statement;
+    }
+
+    public ProfilingContext context() {
+        return context;
     }
 
     @Override
