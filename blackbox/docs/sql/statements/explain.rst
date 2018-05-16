@@ -4,7 +4,7 @@
 ``EXPLAIN``
 ===========
 
-Explain and analyze the plan for a given statement.
+Explain or analyze the plan for a given statement.
 
 .. rubric:: Table of Contents
 
@@ -25,9 +25,8 @@ The ``EXPLAIN`` command displays the execution plan that the planner generates
 for the supplied statement. The plan is returned as a nested object containing
 the plan tree.
 
-When issuing ``EXPLAIN ANALYZE`` the plan of the statement is also executed. In
-this case, timings of the different phases of the plan are returned instead of
-the plan itself.
+When issuing ``EXPLAIN ANALYZE`` the plan of the statement is executed and
+timings of the different phases of the plan are returned.
 
 .. NOTE::
 

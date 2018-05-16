@@ -24,8 +24,8 @@ package io.crate.profile;
 
 import com.google.common.collect.ImmutableMap;
 
-import javax.annotation.Nullable;
 import java.util.Map;
+import java.util.function.Function;
 
 /**
  * Simple stop watch type class that can be used as a context across multiple layers (analyzer, planner, executor)
@@ -37,44 +37,37 @@ import java.util.Map;
 public class ProfilingContext {
 
     private final boolean enabled;
-    private final ImmutableMap.Builder<String, Object> map;
+    private final ImmutableMap.Builder<String, Long> map;
+    private final Function<String, TimeMeasurable> measureableFactory;
 
     public ProfilingContext(boolean enabled) {
         this.enabled = enabled;
         this.map = ImmutableMap.builder();
+        this.measureableFactory = enabled ? InternalTimeMeasurable::new : NoopTimeMeasurable::new;
     }
 
     public boolean enabled() {
         return enabled;
     }
 
-    public Map<String, Object> build() {
+    public Map<String, Long> getAsMap() {
         return map.build();
     }
 
-    @Nullable
-    public TimerToken startTiming(String name) {
+    public TimeMeasurable createAndStartMeasurable(String name) {
+        TimeMeasurable timer = createMeasurable(name);
+        timer.start();
+        return timer;
+    }
+
+    public void stopAndAddMeasurable(TimeMeasurable measurable) {
+        measurable.stop();
         if (enabled) {
-            return new TimerToken(name);
-        }
-        return null;
-    }
-
-    public void stopTiming(@Nullable TimerToken token) {
-        if (enabled && token != null) {
-            long duration = System.nanoTime() - token.startTimeNanos;
-            map.put(token.name, duration / 1_000_000L);
+            map.put(measurable.name(), measurable.durationNanos() / 1_000_000L);
         }
     }
 
-    public static class TimerToken {
-
-        private final String name;
-        private final long startTimeNanos;
-
-        private TimerToken(String name) {
-            this.name = name;
-            this.startTimeNanos = System.nanoTime();
-        }
+    public TimeMeasurable createMeasurable(String name) {
+        return measureableFactory.apply(name);
     }
 }
